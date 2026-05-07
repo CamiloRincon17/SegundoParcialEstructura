@@ -295,7 +295,7 @@ public class ListaDoble {
     }
 
     private void guardarEnArchivo() {
-        try (PrintWriter pw = new PrintWriter(new FileWriter("alertas.csv"))) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter("src/main/resources/alertas.csv"))) {
             NodoDoble actual = cabeza;
             while (actual != null) {
                 pw.println(actual.id + "," + actual.sensorId + "," + actual.tipoSensor + "," + actual.valor + "," + 
@@ -308,7 +308,7 @@ public class ListaDoble {
     }
 
     private void cargarDesdeArchivo() {
-        File f = new File("alertas.csv");
+        File f = new File("src/main/resources/alertas.csv");
         if (!f.exists()) return;
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             String line;

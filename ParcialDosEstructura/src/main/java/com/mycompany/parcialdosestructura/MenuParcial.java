@@ -10,8 +10,9 @@ package com.mycompany.parcialdosestructura;
  */
 public class MenuParcial extends javax.swing.JFrame {
 
-    // ── Lógica separada de la interfaz ────────────────────────────────────────
-    private final ControladorAlertas controlador = new ControladorAlertas();
+    // ── Lógica directa (sin controlador intermedio) ───────────────────────────
+    private final ListaDoble         lista     = new ListaDoble();
+    private final SimuladorSensores  simulador = new SimuladorSensores();
     private javax.swing.Timer        timerSensores;
 
     /**
@@ -20,8 +21,7 @@ public class MenuParcial extends javax.swing.JFrame {
     public MenuParcial() {
         initComponents();
         configurarVentana();
-        conectarBotones();
-        mostrar("Sistema iniciado. " + controlador.getTotalRegistros() + " registros cargados en memoria.");
+        mostrar("Sistema iniciado. " + lista.size + " registros cargados en memoria.");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -36,71 +36,13 @@ public class MenuParcial extends javax.swing.JFrame {
 
         // Timer: dispara un ciclo de simulación cada 1.5 segundos
         timerSensores = new javax.swing.Timer(1500, e -> {
-            String log = controlador.ejecutarCicloSimulacion();
-            mostrar(log);
+            String[] lectura  = simulador.generarLectura();
+            String   sensorId = lectura[0];
+            String   tipo     = lectura[1];
+            float    valor    = Float.parseFloat(lectura[2]);
+            String   resultado = lista.validarEInsertar(sensorId, tipo, valor);
+            mostrar(String.format("Auto → %s (%s): %.2f → %s", sensorId, tipo, valor, resultado));
         });
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  CONEXIÓN DE BOTONES → CONTROLADOR  (la UI delega toda la lógica)
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private void conectarBotones() {
-
-        // ── Simulación ────────────────────────────────────────────────────────
-        btnSimular.addActionListener(e -> {
-            timerSensores.start();
-            mostrar("--- SIMULACIÓN INICIADA ---");
-        });
-        btnDetener.addActionListener(e -> {
-            timerSensores.stop();
-            mostrar("--- SIMULACIÓN DETENIDA ---");
-        });
-
-        // ── Inserción manual ──────────────────────────────────────────────────
-        btnInsertar.addActionListener(e -> {
-            String resultado = controlador.insertarManual(
-                    txtSensorId.getText(),
-                    (String) cmbTipo.getSelectedItem(),
-                    txtValor.getText()
-            );
-            mostrar(resultado);
-        });
-
-        // ── Listar ────────────────────────────────────────────────────────────
-        btnListar.addActionListener(e -> {
-            mostrar("--- TODAS LAS ALERTAS ---");
-            mostrar(controlador.listarTodas(false));
-        });
-        btnListarInv.addActionListener(e -> {
-            mostrar("--- TODAS LAS ALERTAS (INVERSO) ---");
-            mostrar(controlador.listarTodas(true));
-        });
-
-        // ── Reportes ──────────────────────────────────────────────────────────
-        btnReportes.addActionListener(e    -> mostrar(controlador.generarReportes()));
-        btnPeligroVib.addActionListener(e  -> mostrar(controlador.reporteVibracionPeligro()));
-        btnCondensacion.addActionListener(e -> mostrar(controlador.reporteCondensacion()));
-
-        // ── Limpiar pantalla ──────────────────────────────────────────────────
-        btnLimpiar.addActionListener(e -> JTextArea.setText(""));
-
-        // ── Panel derecho: ID ─────────────────────────────────────────────────
-        btnConsultarId.addActionListener(e ->
-                mostrar(controlador.consultarPorId(txtId.getText())));
-
-        btnRevisar.addActionListener(e ->
-                mostrar(controlador.marcarRevisada(txtId.getText())));
-
-        btnEliminar.addActionListener(e ->
-                mostrar(controlador.eliminarPorId(txtId.getText())));
-
-        // ── Panel derecho: sensor y umbral ────────────────────────────────────
-        btnFiltrarSensor.addActionListener(e ->
-                mostrar(controlador.filtrarPorSensor(txtSensorBuscar.getText())));
-
-        btnEliminarUmbral.addActionListener(e ->
-                mostrar(controlador.eliminarPorUmbral(txtUmbral.getText())));
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -156,27 +98,85 @@ public class MenuParcial extends javax.swing.JFrame {
 
         jLabel1.setText("ID Operación: ");
 
+        txtId.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtIdActionPerformed(evt);
+            }
+        });
+
         btnConsultarId.setText("🔍 Consultar por ID ");
+        btnConsultarId.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConsultarIdActionPerformed(evt);
+            }
+        });
 
         btnRevisar.setText("✅ Marcar Revisada ");
+        btnRevisar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRevisarActionPerformed(evt);
+            }
+        });
 
         btnEliminar.setText("❌ Eliminar por ID ");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("Buscar Sensor ID: ");
 
+        txtSensorBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSensorBuscarActionPerformed(evt);
+            }
+        });
+
         btnFiltrarSensor.setText("🔎 Filtrar Sensor ");
+        btnFiltrarSensor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFiltrarSensorActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Umbral Temp (°C): ");
 
+        txtUmbral.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtUmbralActionPerformed(evt);
+            }
+        });
+
         btnEliminarUmbral.setText("🌡 Eliminar Temp ID");
+        btnEliminarUmbral.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarUmbralActionPerformed(evt);
+            }
+        });
 
         btnSimular.setText("▶ Iniciar Simulación ");
+        btnSimular.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSimularActionPerformed(evt);
+            }
+        });
 
         btnDetener.setText("⏹ Detener Simulación ");
+        btnDetener.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDetenerActionPerformed(evt);
+            }
+        });
 
         jLabel4.setText("Sensor ID:");
 
         txtSensorId.setText("SENS-1");
+        txtSensorId.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSensorIdActionPerformed(evt);
+            }
+        });
 
         jLabel5.setText("Tipo:");
 
@@ -194,19 +194,60 @@ public class MenuParcial extends javax.swing.JFrame {
 
         jLabel6.setText("Valor:");
 
+        txtValor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtValorActionPerformed(evt);
+            }
+        });
+
         btnInsertar.setText("Insertar Manual ");
+        btnInsertar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnInsertarActionPerformed(evt);
+            }
+        });
 
         btnListar.setText("Listar Todas ");
+        btnListar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnListarActionPerformed(evt);
+            }
+        });
 
         btnListarInv.setText("Listar Inverso ");
+        btnListarInv.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnListarInvActionPerformed(evt);
+            }
+        });
 
         btnReportes.setText("📊 Reportes ");
+        btnReportes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReportesActionPerformed(evt);
+            }
+        });
 
         btnPeligroVib.setText("⚠ Peligro Vibración ");
+        btnPeligroVib.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPeligroVibActionPerformed(evt);
+            }
+        });
 
         btnCondensacion.setText("💧 Riesgo Condensación ");
+        btnCondensacion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCondensacionActionPerformed(evt);
+            }
+        });
 
         btnLimpiar.setText("Limpiar Pantalla ");
+        btnLimpiar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLimpiarActionPerformed(evt);
+            }
+        });
 
         JTextArea.setEditable(false);
         JTextArea.setColumns(20);
@@ -228,7 +269,6 @@ public class MenuParcial extends javax.swing.JFrame {
                         .addComponent(btnSimular)
                         .addGap(33, 33, 33)
                         .addComponent(btnDetener))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 749, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
@@ -254,7 +294,8 @@ public class MenuParcial extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(btnCondensacion)
                         .addGap(18, 18, 18)
-                        .addComponent(btnLimpiar)))
+                        .addComponent(btnLimpiar))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 739, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -299,9 +340,9 @@ public class MenuParcial extends javax.swing.JFrame {
                     .addComponent(btnCondensacion)
                     .addComponent(btnLimpiar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
                         .addGap(15, 15, 15)
                         .addComponent(txtId, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -322,23 +363,180 @@ public class MenuParcial extends javax.swing.JFrame {
                         .addComponent(txtUmbral, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnEliminar)
-                        .addGap(0, 57, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(3, 3, 3)
-                        .addComponent(jScrollPane2)))
-                .addContainerGap())
+                        .addContainerGap(63, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE))))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void cmbTipoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cmbTipoItemStateChanged
-         // TODO add your handling code here:
+        // No se necesita lógica adicional al cambiar tipo de sensor
     }//GEN-LAST:event_cmbTipoItemStateChanged
 
     private void cmbTipoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbTipoActionPerformed
-        // TODO add your handling code here:
+        // No se necesita lógica adicional al seleccionar tipo de sensor
     }//GEN-LAST:event_cmbTipoActionPerformed
+
+    private void txtIdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIdActionPerformed
+        // Al presionar Enter en el campo ID, ejecuta la consulta
+        btnConsultarIdActionPerformed(evt);
+    }//GEN-LAST:event_txtIdActionPerformed
+
+    private void btnListarInvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListarInvActionPerformed
+        // CONSULTAR: Listar todas las alertas en orden inverso (de cola a cabeza)
+        mostrar("--- TODAS LAS ALERTAS (INVERSO) ---");
+        mostrar(lista.listarTodas(true));
+    }//GEN-LAST:event_btnListarInvActionPerformed
+
+    private void btnListarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListarActionPerformed
+        // CONSULTAR: Listar todas las alertas en orden cronológico (cabeza a cola)
+        mostrar("--- TODAS LAS ALERTAS ---");
+        mostrar(lista.listarTodas(false));
+    }//GEN-LAST:event_btnListarActionPerformed
+
+    private void btnReportesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReportesActionPerformed
+        // Genera reportes estadísticos (promedios, conteo por prioridad, sensor más problemático)
+        mostrar(lista.generarReportes());
+    }//GEN-LAST:event_btnReportesActionPerformed
+
+    private void btnPeligroVibActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPeligroVibActionPerformed
+        // CONSULTAR: Filtra alertas de vibración con valor > 7.1 mm/s (peligro)
+        mostrar("--- PELIGRO VIBRACIÓN (> 7.1 mm/s) ---");
+        mostrar(lista.listarVibracionPeligro());
+    }//GEN-LAST:event_btnPeligroVibActionPerformed
+
+    private void btnCondensacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCondensacionActionPerformed
+        // CONSULTAR: Filtra alertas de humedad con riesgo de condensación (> 80%)
+        mostrar("--- RIESGO DE CONDENSACIÓN (Humedad > 80%) ---");
+        mostrar(lista.consultarHistorialHumedadCondensacion());
+    }//GEN-LAST:event_btnCondensacionActionPerformed
+
+    private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
+        // Limpia el área de texto
+        JTextArea.setText("");
+    }//GEN-LAST:event_btnLimpiarActionPerformed
+
+    private void btnInsertarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInsertarActionPerformed
+        // CREAR: Inserción manual de una alerta llamando directamente a ListaDoble
+        try {
+            String sensorId = txtSensorId.getText();
+            String tipo     = (String) cmbTipo.getSelectedItem();
+            float  valor    = Float.parseFloat(txtValor.getText().trim());
+            String resultado = lista.validarEInsertar(sensorId, tipo, valor);
+            mostrar("Manual: " + resultado);
+        } catch (NumberFormatException e) {
+            mostrar("Error: el valor ingresado no es un número válido.");
+        }
+    }//GEN-LAST:event_btnInsertarActionPerformed
+
+    private void txtValorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtValorActionPerformed
+        // Al presionar Enter en el campo valor, ejecuta la inserción
+        btnInsertarActionPerformed(evt);
+    }//GEN-LAST:event_txtValorActionPerformed
+
+    private void txtSensorIdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSensorIdActionPerformed
+        // No se necesita acción al presionar Enter en Sensor ID
+    }//GEN-LAST:event_txtSensorIdActionPerformed
+
+    private void btnSimularActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimularActionPerformed
+        // Inicia la simulación automática de sensores con el Timer
+        timerSensores.start();
+        mostrar("--- SIMULACIÓN INICIADA ---");
+    }//GEN-LAST:event_btnSimularActionPerformed
+
+    private void btnDetenerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDetenerActionPerformed
+        // Detiene la simulación automática de sensores
+        timerSensores.stop();
+        mostrar("--- SIMULACIÓN DETENIDA ---");
+    }//GEN-LAST:event_btnDetenerActionPerformed
+
+    private void btnConsultarIdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConsultarIdActionPerformed
+        // CONSULTAR: Busca una alerta específica por su ID en la lista doble
+        String idTexto = txtId.getText();
+        if (idTexto == null || idTexto.isBlank()) {
+            mostrar("⚠️ El campo ID está vacío. Escriba un número.");
+            return;
+        }
+        try {
+            int id = Integer.parseInt(idTexto.trim());
+            mostrar("Consulta ID " + id + ":");
+            mostrar(lista.consultarPorId(id));
+        } catch (NumberFormatException e) {
+            mostrar("⚠️ '" + idTexto.trim() + "' no es un ID válido. Use solo números.");
+        }
+    }//GEN-LAST:event_btnConsultarIdActionPerformed
+
+    private void btnRevisarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRevisarActionPerformed
+        // ACTUALIZAR: Cambia el estado de "Pendiente" a "Revisada" buscando por ID
+        try {
+            int id = Integer.parseInt(txtId.getText().trim());
+            if (lista.actualizarEstado(id, "Revisada")) {
+                mostrar("✅ ID " + id + " marcado como Revisada.");
+            } else {
+                mostrar("❌ ID " + id + " no encontrado.");
+            }
+        } catch (NumberFormatException e) {
+            mostrar("Error: ingrese un ID numérico válido.");
+        }
+    }//GEN-LAST:event_btnRevisarActionPerformed
+
+    private void btnEliminarUmbralActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarUmbralActionPerformed
+        // ELIMINAR: Elimina alertas de Temperatura con valor menor al umbral
+        try {
+            float umbral    = Float.parseFloat(txtUmbral.getText().trim());
+            int   eliminados = lista.eliminarAlertasMenoresA(umbral);
+            mostrar("Se eliminaron " + eliminados + " alerta(s) de Temperatura < " + umbral + " °C.");
+        } catch (NumberFormatException e) {
+            mostrar("Error: ingrese un valor de umbral numérico válido.");
+        }
+    }//GEN-LAST:event_btnEliminarUmbralActionPerformed
+
+    private void txtSensorBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSensorBuscarActionPerformed
+        // Al presionar Enter en el campo sensor, ejecuta el filtrado
+        btnFiltrarSensorActionPerformed(evt);
+    }//GEN-LAST:event_txtSensorBuscarActionPerformed
+
+    private void btnFiltrarSensorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFiltrarSensorActionPerformed
+        // CONSULTAR: Filtra todas las alertas de un SensorID específico
+        String sensorId = txtSensorBuscar.getText();
+        if (sensorId == null || sensorId.isBlank()) {
+            mostrar("Error: ingrese un Sensor ID para filtrar.");
+            return;
+        }
+        String alertas  = lista.filtrarPorSensor(sensorId);
+        int    patrones = lista.contarPatronesSensor(sensorId);
+        mostrar("--- ALERTAS DE " + sensorId + " ---");
+        mostrar(alertas);
+        mostrar("→ Alertas críticas en últimos 10 registros: " + patrones);
+    }//GEN-LAST:event_btnFiltrarSensorActionPerformed
+
+    private void txtUmbralActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUmbralActionPerformed
+        // Al presionar Enter en el campo umbral, ejecuta la eliminación por umbral
+        btnEliminarUmbralActionPerformed(evt);
+    }//GEN-LAST:event_txtUmbralActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        // ELIMINAR: Elimina una alerta por ID. La lista doble permite borrado O(1)
+        // porque al encontrar el nodo, se accede a anterior y siguiente directamente.
+        String idTexto = txtId.getText();
+        if (idTexto == null || idTexto.isBlank()) {
+            mostrar("⚠️ El campo ID está vacío. Escriba un número.");
+            return;
+        }
+        try {
+            int id = Integer.parseInt(idTexto.trim());
+            if (lista.eliminarPorId(id)) {
+                mostrar("✅ Registro ID " + id + " eliminado correctamente.");
+            } else {
+                mostrar("❌ ID " + id + " no encontrado. Use 'Listar Todas' para ver los IDs disponibles.");
+            }
+        } catch (NumberFormatException e) {
+            mostrar("⚠️ '" + idTexto.trim() + "' no es un ID válido. Use solo números.");
+        }
+    }//GEN-LAST:event_btnEliminarActionPerformed
 
     /**
      * @param args the command line arguments
