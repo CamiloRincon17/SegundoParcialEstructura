@@ -1,0 +1,409 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+package com.mycompany.parcialdosestructura;
+
+/**
+ *
+ * @author URIEL MAURICIO
+ */
+public class MenuParcial extends javax.swing.JFrame {
+
+    // ── Lógica separada de la interfaz ────────────────────────────────────────
+    private final ControladorAlertas controlador = new ControladorAlertas();
+    private javax.swing.Timer        timerSensores;
+
+    /**
+     * Creates new form MenuParcial
+     */
+    public MenuParcial() {
+        initComponents();
+        configurarVentana();
+        conectarBotones();
+        mostrar("Sistema iniciado. " + controlador.getTotalRegistros() + " registros cargados en memoria.");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  CONFIGURACIÓN INICIAL (se llama una sola vez desde el constructor)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** Ajustes generales de la ventana. */
+    private void configurarVentana() {
+        setTitle("Sistema de Gestión de Alertas IoT");
+        setSize(950, 650);
+        setLocationRelativeTo(null); // centrar en pantalla
+
+        // Timer: dispara un ciclo de simulación cada 1.5 segundos
+        timerSensores = new javax.swing.Timer(1500, e -> {
+            String log = controlador.ejecutarCicloSimulacion();
+            mostrar(log);
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  CONEXIÓN DE BOTONES → CONTROLADOR  (la UI delega toda la lógica)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void conectarBotones() {
+
+        // ── Simulación ────────────────────────────────────────────────────────
+        btnSimular.addActionListener(e -> {
+            timerSensores.start();
+            mostrar("--- SIMULACIÓN INICIADA ---");
+        });
+        btnDetener.addActionListener(e -> {
+            timerSensores.stop();
+            mostrar("--- SIMULACIÓN DETENIDA ---");
+        });
+
+        // ── Inserción manual ──────────────────────────────────────────────────
+        btnInsertar.addActionListener(e -> {
+            String resultado = controlador.insertarManual(
+                    txtSensorId.getText(),
+                    (String) cmbTipo.getSelectedItem(),
+                    txtValor.getText()
+            );
+            mostrar(resultado);
+        });
+
+        // ── Listar ────────────────────────────────────────────────────────────
+        btnListar.addActionListener(e -> {
+            mostrar("--- TODAS LAS ALERTAS ---");
+            mostrar(controlador.listarTodas(false));
+        });
+        btnListarInv.addActionListener(e -> {
+            mostrar("--- TODAS LAS ALERTAS (INVERSO) ---");
+            mostrar(controlador.listarTodas(true));
+        });
+
+        // ── Reportes ──────────────────────────────────────────────────────────
+        btnReportes.addActionListener(e    -> mostrar(controlador.generarReportes()));
+        btnPeligroVib.addActionListener(e  -> mostrar(controlador.reporteVibracionPeligro()));
+        btnCondensacion.addActionListener(e -> mostrar(controlador.reporteCondensacion()));
+
+        // ── Limpiar pantalla ──────────────────────────────────────────────────
+        btnLimpiar.addActionListener(e -> JTextArea.setText(""));
+
+        // ── Panel derecho: ID ─────────────────────────────────────────────────
+        btnConsultarId.addActionListener(e ->
+                mostrar(controlador.consultarPorId(txtId.getText())));
+
+        btnRevisar.addActionListener(e ->
+                mostrar(controlador.marcarRevisada(txtId.getText())));
+
+        btnEliminar.addActionListener(e ->
+                mostrar(controlador.eliminarPorId(txtId.getText())));
+
+        // ── Panel derecho: sensor y umbral ────────────────────────────────────
+        btnFiltrarSensor.addActionListener(e ->
+                mostrar(controlador.filtrarPorSensor(txtSensorBuscar.getText())));
+
+        btnEliminarUmbral.addActionListener(e ->
+                mostrar(controlador.eliminarPorUmbral(txtUmbral.getText())));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  MÉTODOS AUXILIARES DE INTERFAZ
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** Muestra un mensaje en el área de texto y hace scroll al final. */
+    private void mostrar(String mensaje) {
+        JTextArea.append(mensaje + "\n");
+        JTextArea.setCaretPosition(JTextArea.getDocument().getLength());
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jLabel1 = new javax.swing.JLabel();
+        txtId = new javax.swing.JTextField();
+        btnConsultarId = new javax.swing.JButton();
+        btnRevisar = new javax.swing.JButton();
+        btnEliminar = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        txtSensorBuscar = new javax.swing.JTextField();
+        btnFiltrarSensor = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        txtUmbral = new javax.swing.JTextField();
+        btnEliminarUmbral = new javax.swing.JButton();
+        btnSimular = new javax.swing.JButton();
+        btnDetener = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        txtSensorId = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        cmbTipo = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
+        txtValor = new javax.swing.JTextField();
+        btnInsertar = new javax.swing.JButton();
+        btnListar = new javax.swing.JButton();
+        btnListarInv = new javax.swing.JButton();
+        btnReportes = new javax.swing.JButton();
+        btnPeligroVib = new javax.swing.JButton();
+        btnCondensacion = new javax.swing.JButton();
+        btnLimpiar = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        JTextArea = new javax.swing.JTextArea();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jLabel1.setText("ID Operación: ");
+
+        btnConsultarId.setText("🔍 Consultar por ID ");
+
+        btnRevisar.setText("✅ Marcar Revisada ");
+
+        btnEliminar.setText("❌ Eliminar por ID ");
+
+        jLabel2.setText("Buscar Sensor ID: ");
+
+        btnFiltrarSensor.setText("🔎 Filtrar Sensor ");
+
+        jLabel3.setText("Umbral Temp (°C): ");
+
+        btnEliminarUmbral.setText("🌡 Eliminar Temp ID");
+
+        btnSimular.setText("▶ Iniciar Simulación ");
+
+        btnDetener.setText("⏹ Detener Simulación ");
+
+        jLabel4.setText("Sensor ID:");
+
+        txtSensorId.setText("SENS-1");
+
+        jLabel5.setText("Tipo:");
+
+        cmbTipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Temperatura", "Humedad", "Vibración" }));
+        cmbTipo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cmbTipoItemStateChanged(evt);
+            }
+        });
+        cmbTipo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbTipoActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("Valor:");
+
+        btnInsertar.setText("Insertar Manual ");
+
+        btnListar.setText("Listar Todas ");
+
+        btnListarInv.setText("Listar Inverso ");
+
+        btnReportes.setText("📊 Reportes ");
+
+        btnPeligroVib.setText("⚠ Peligro Vibración ");
+
+        btnCondensacion.setText("💧 Riesgo Condensación ");
+
+        btnLimpiar.setText("Limpiar Pantalla ");
+
+        JTextArea.setEditable(false);
+        JTextArea.setColumns(20);
+        JTextArea.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
+        JTextArea.setRows(5);
+        jScrollPane1.setViewportView(JTextArea);
+
+        jScrollPane2.setViewportView(jScrollPane1);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(53, 53, 53)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(109, 109, 109)
+                        .addComponent(btnSimular)
+                        .addGap(33, 33, 33)
+                        .addComponent(btnDetener))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 749, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(txtSensorId, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cmbTipo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(txtValor, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnInsertar))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnListar)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnListarInv)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnReportes)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnPeligroVib)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnCondensacion)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnLimpiar)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtId, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1)
+                            .addComponent(btnConsultarId)
+                            .addComponent(btnRevisar))
+                        .addGap(1, 1, 1))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel2)
+                        .addComponent(btnEliminarUmbral, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtSensorBuscar)
+                        .addComponent(btnFiltrarSensor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtUmbral)
+                        .addComponent(btnEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(95, 95, 95))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnSimular)
+                    .addComponent(btnDetener))
+                .addGap(5, 5, 5)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtSensorId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel5)
+                    .addComponent(cmbTipo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6)
+                    .addComponent(txtValor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnInsertar))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnListar)
+                    .addComponent(btnListarInv)
+                    .addComponent(btnReportes)
+                    .addComponent(btnPeligroVib)
+                    .addComponent(btnCondensacion)
+                    .addComponent(btnLimpiar))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(15, 15, 15)
+                        .addComponent(txtId, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnConsultarId)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnRevisar)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnEliminarUmbral)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtSensorBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnFiltrarSensor)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtUmbral, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnEliminar)
+                        .addGap(0, 57, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(3, 3, 3)
+                        .addComponent(jScrollPane2)))
+                .addContainerGap())
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void cmbTipoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cmbTipoItemStateChanged
+         // TODO add your handling code here:
+    }//GEN-LAST:event_cmbTipoItemStateChanged
+
+    private void cmbTipoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbTipoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbTipoActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(MenuParcial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(MenuParcial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(MenuParcial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(MenuParcial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new MenuParcial().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea JTextArea;
+    private javax.swing.JButton btnCondensacion;
+    private javax.swing.JButton btnConsultarId;
+    private javax.swing.JButton btnDetener;
+    private javax.swing.JButton btnEliminar;
+    private javax.swing.JButton btnEliminarUmbral;
+    private javax.swing.JButton btnFiltrarSensor;
+    private javax.swing.JButton btnInsertar;
+    private javax.swing.JButton btnLimpiar;
+    private javax.swing.JButton btnListar;
+    private javax.swing.JButton btnListarInv;
+    private javax.swing.JButton btnPeligroVib;
+    private javax.swing.JButton btnReportes;
+    private javax.swing.JButton btnRevisar;
+    private javax.swing.JButton btnSimular;
+    private javax.swing.JComboBox<String> cmbTipo;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextField txtId;
+    private javax.swing.JTextField txtSensorBuscar;
+    private javax.swing.JTextField txtSensorId;
+    private javax.swing.JTextField txtUmbral;
+    private javax.swing.JTextField txtValor;
+    // End of variables declaration//GEN-END:variables
+}
