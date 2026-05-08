@@ -13,7 +13,7 @@ public class ParcialDosEstructura {
     public static void main(String[] args) {
         // Ejecutar el menú interactivo
         java.awt.EventQueue.invokeLater(() -> {
-            new Menu().setVisible(true);
+            new MenuParcial().setVisible(true);
         });
     }
 }
